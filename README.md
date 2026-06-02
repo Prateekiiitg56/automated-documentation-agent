@@ -273,7 +273,7 @@ No manual intervention is required after the initial setup.
 
 A full demonstration video showing the end-to-end pipeline in action:
 
-**[Watch the Demo Video](https://drive.google.com/YOUR_DEMO_VIDEO_LINK)**
+**[Watch the Demo Video](https://drive.google.com/file/d/13vSu9dFpiqVgzkXrHUZWl-eTx711PHSY/view?pli=1)**
 
 The video shows:
 1. A pull request being created and merged on GitHub.
