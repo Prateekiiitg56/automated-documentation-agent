@@ -1,0 +1,31 @@
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if any local scripting)
+node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Large media files (hosted externally)
+*.mp4
+
+# Temporary files
+tmp/
+temp/

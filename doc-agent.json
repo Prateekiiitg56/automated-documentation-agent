@@ -1,0 +1,671 @@
+{
+  "name": "doc-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-hook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6a72daa1-87d2-429e-87c7-e533b8f4a39f",
+      "name": "Webhook",
+      "webhookId": "fadfe779-1c64-4e55-aa9b-ec466b92f82b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c35b0d3b-6eea-43e4-9156-131f7a40dd37",
+              "name": "repo",
+              "value": "={{$json.body.repository.full_name}}",
+              "type": "string"
+            },
+            {
+              "id": "179b173f-560d-4d84-9c6d-8bf8896baae7",
+              "name": "pr_number",
+              "value": "={{$json.body.pull_request.number}}",
+              "type": "string"
+            },
+            {
+              "id": "3192aca6-683d-449b-aeb4-7ebb18690b37",
+              "name": "pr_title",
+              "value": "={{$json.body.pull_request.title}}",
+              "type": "string"
+            },
+            {
+              "id": "fa64b284-222c-4b17-8ddf-f32e059c0152",
+              "name": "pr_body",
+              "value": "={{$json.body.pull_request.body}}",
+              "type": "string"
+            },
+            {
+              "id": "99c02ae6-5b5a-4d8e-b662-40fffb4b1273",
+              "name": "base_branch",
+              "value": "={{$json.body.pull_request.base.ref}}",
+              "type": "string"
+            },
+            {
+              "id": "00712842-f336-40c4-b73f-7d1a0ac89ad1",
+              "name": "github_token",
+              "value": "YOUR_GITHUB_TOKEN",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "76f9a786-d233-482f-ab8a-000c4564eda5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://api.github.com/repos/\" + $json[\"repo\"] + \"/pulls/\" + $json[\"pr_number\"] + \"/files\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$json.github_token}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "935cef29-73d3-4a5f-a510-d2f70b131b3a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $input.all();\nlet diffText = \"\";\n\nfor (const file of files) {\n  const filename = file.json.filename;\n  const patch = file.json.patch || \"(binary file or no changes)\";\n  \n  diffText += `\\n\\n--- ${filename} ---\\n${patch}`;\n}\n\nconst trimmedDiff = diffText.slice(0, 4000);\n\nreturn [{\n  json: {\n    ...$input.first().json,\n    diff: trimmedDiff\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "4a2c7144-73ed-492a-9482-74c98ea7507e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/Prateekiiitg56/doc-agent-test/contents/README.md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer YOUR_GITHUB_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        992,
+        -272
+      ],
+      "id": "0ca9a61a-e124-443b-b79b-cc243a705d13",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst readme = Buffer.from(item.content, 'base64').toString('utf-8');\nconst sha = item.sha;\n\nreturn [{\n  json: {\n    ...$('Edit Fields').first().json,\n    diff: $('Code in JavaScript').first().json.diff,\n    current_readme: readme,\n    readme_sha: sha\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -256
+      ],
+      "id": "30a3d6ba-4dcb-4c70-a3d5-ef63a8552f7b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={{\n{\n  model: \"llama-3.3-70b-versatile\",\n  max_tokens: 1000,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a technical content creator. Return ONLY valid JSON.\"\n    },\n    {\n      role: \"user\",\n      content:\n        \"Create a 1-minute video script for this GitHub feature.\\n\\n\" +\n        \"Title: \" + $json.pr_title + \"\\n\\n\" +\n        \"Description:\\n\" + ($json.pr_body || \"\")\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1424,
+        -208
+      ],
+      "id": "38835a91-7aff-4bdd-81f9-a59299b5103f",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Se1xUReL4yCL45I4",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst updatedReadme = response.choices[0].message.content;\n\n// GitHub needs base64 encoded content\nconst encoded = Buffer.from(updatedReadme).toString('base64');\n\nreturn [{\n  json: {\n    ...$('Code in JavaScript1').first().json,\n    updated_readme_b64: encoded\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -160
+      ],
+      "id": "d1f8f03b-a102-45f0-8f3b-a6093ed96796",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{$json.repo}}/contents/README.md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$json.github_token}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"docs: auto-update README for PR #{{$json.pr_number}}\",\n  \"content\": \"{{$json.updated_readme_b64}}\",\n  \"sha\": \"{{$json.readme_sha}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1888,
+        -208
+      ],
+      "id": "22c3e8c4-b57a-40e2-a1f7-00b1d319e27c",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  model: \"llama-3.3-70b-versatile\",\n  max_tokens: 2000,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a senior developer writing technical blogs. Return only markdown. No preamble.\"\n    },\n    {\n      role: \"user\",\n      content:\n        \"Write a technical blog post about this merged feature:\\n\\n\" +\n        \"Title: \" + ($json.pr_title || \"\") + \"\\n\" +\n        \"Description: \" + ($json.pr_body || \"No description provided\") + \"\\n\" +\n        \"Code changes:\\n\" + ($json.diff || \"\") + \"\\n\\n\" +\n        \"Structure: # Title, ## Introduction, ## What Changed, ## Why It Matters, ## Code Example, ## Conclusion\"\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1232,
+        80
+      ],
+      "id": "e7df6a8c-1a72-4753-bf08-9cd3713f9177",
+      "name": "HTTP Request4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Se1xUReL4yCL45I4",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst blogContent = response.choices[0].message.content;\n\n// Encode for GitHub\nconst encoded = Buffer.from(blogContent).toString('base64');\nconst prNumber = $('Code in JavaScript1').first().json.pr_number;\n\nreturn [{\n  json: {\n    ...$('Code in JavaScript1').first().json,\n    blog_b64: encoded,\n    blog_path: `docs/blog/pr-${prNumber}.md`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        96
+      ],
+      "id": "916524eb-6589-4f01-9dbc-6b4d1aa5e5cc",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{\n\"https://api.github.com/repos/\" +\n$json.repo +\n\"/contents/docs/videos/pr-\" +\n$json.pr_number +\n\"-\" +\nDate.now() +\n\".md\"\n}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$json.github_token}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"create video script\",\n  \"content\": \"{{$json.script_b64}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1808,
+        112
+      ],
+      "id": "77b4eec4-9794-4279-abce-e10216ad1b9f",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  model: \"llama-3.3-70b-versatile\",\n  max_tokens: 1000,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a technical content creator. Return ONLY valid JSON. No markdown.\"\n    },\n    {\n      role: \"user\",\n      content:\n        \"Create a 1-minute video script for this GitHub feature.\\n\\n\" +\n        \"Title: \" + ($json.pr_title || \"\") + \"\\n\\n\" +\n        \"Description:\\n\" + JSON.stringify($json.pr_body || \"\") + \"\\n\\n\" +\n        \"Return EXACTLY this JSON format:\\n\" +\n        \"{\\\"voiceover\\\":\\\"short narration\\\",\\\"slides\\\":[{\\\"title\\\":\\\"slide 1\\\",\\\"bullet\\\":\\\"key point\\\"}]}\"\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1408,
+        -512
+      ],
+      "id": "87747aea-31d7-4a3e-8549-a972e3b8add9",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\n\nconst raw = response.choices[0].message.content;\n\n// remove markdown code blocks safely\nconst cleaned = raw\n  .replace(\"```json\", \"\")\n  .replace(\"```\", \"\")\n  .trim();\n\nconst videoData = JSON.parse(cleaned);\n\nreturn [{\n  json: {\n    ...$('Code in JavaScript1').first().json,\n    video_data: JSON.stringify(videoData)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -512
+      ],
+      "id": "e6cfe2cf-044c-4c31-a583-ddc187bc435e",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = JSON.parse($input.first().json.video_data);\n\n// Format as readable markdown video script\nlet markdown = `# Video Script — PR #${$input.first().json.pr_number}\\n\\n`;\nmarkdown += `## Voiceover Script\\n${data.voiceover}\\n\\n`;\nmarkdown += `## Slides\\n`;\n\ndata.slides.forEach((slide, i) => {\n  markdown += `### Slide ${i+1}: ${slide.title}\\n- ${slide.bullet}\\n\\n`;\n});\n\nconst encoded = Buffer.from(markdown).toString('base64');\n\nreturn [{\n  json: {\n    ...$('Code in JavaScript1').first().json,\n    script_b64: encoded\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        -512
+      ],
+      "id": "b3c5afe0-67dc-4a1f-932f-b5353ad34acb",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{\n\"https://api.github.com/repos/\" +\n$json.repo +\n\"/contents/docs/videos/pr-\" +\n$json.pr_number +\n\"-\" +\nDate.now() +\n\".md\"\n}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GITHUB_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"create video script\",\n  \"content\": \"{{$json.script_b64}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2272,
+        -576
+      ],
+      "id": "fc6fbd81-3df3-4846-bb15-6fd30e6e748d",
+      "name": "HTTP Request7"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2288,
+        -192
+      ],
+      "id": "0f4bf988-be8f-4395-969c-59dab5e860dc",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@example.com",
+        "subject": "=Docs Auto-Updated for PR #{{$json.pr_number}}",
+        "message": "=Hey Prateek!\n\nPR #{{$json.pr_number}} — \"{{$json.pr_title}}\" was merged.\n\nThe agent automatically:\n- Updated README.md\n- Generated blog post: docs/blog/pr-{{$json.pr_number}}.md\n- Created video script: docs/videos/pr-{{$json.pr_number}}-script.md\n\nCheck repo: https://github.com/{{$json.repo}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        -192
+      ],
+      "id": "f7a92c8d-1301-4889-b86d-55c59e4aea2a",
+      "name": "Send a message",
+      "webhookId": "97dcbd58-76c3-47cb-a096-6df6986bbf39",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9OXjthuUPKXLgqtp",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cd2dbeae-d065-4a3a-84ca-bed39e6592b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "rDOOFCRs7bR6a69C",
+  "tags": []
+}
