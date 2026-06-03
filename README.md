@@ -213,7 +213,7 @@ cd automated-documentation-agent
 
 1. Open your n8n instance.
 2. Navigate to **Workflows** and click **Import from File**.
-3. Select the `workflow.json` file from this repository.
+3. Select the `doc-agent.json` file from this repository.
 4. The complete workflow will be loaded with all nodes pre-configured.
 
 ### Step 3: Configure Environment Variables
