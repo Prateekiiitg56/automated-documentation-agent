@@ -25,7 +25,7 @@ An end-to-end automation pipeline that monitors a GitHub repository for pull req
 
 ## Problem Statement
 
-In modern software development, documentation consistently lags behind code. Every time a feature is merged, the README becomes stale, onboarding materials grow outdated, and knowledge transfer breaks down. Maintaining documentation manually is tedious, error-prone, and often deprioritized — leading to a growing gap between what the code does and what the docs say.
+In modern software development, documentation consistently lags behind code. Every time a feature is merged, the README becomes stale, onboarding materials grow outdated, and knowledge transfer breaks down. Maintaining documentation manually is tedious, error-prone, and often deprioritized - leading to a growing gap between what the code does and what the docs say.
 
 The task is to build an **Automated Documentation Lifecycle Agent** that:
 
@@ -58,13 +58,13 @@ The entire pipeline executes automatically with no human intervention required a
 
 ## Features
 
-- **Event-Driven Automation** — Triggered automatically on PR merge via GitHub Webhooks. No polling, no cron jobs.
-- **Intelligent README Updates** — Appends well-structured documentation sections to the existing README without overwriting prior content.
-- **Technical Blog Generation** — Produces publication-ready blog posts that explain the what, why, and how of each merged feature.
-- **Tutorial Video Script Generation** — Creates timestamped, narration-ready scripts suitable for screen recording walkthroughs.
-- **Context-Aware Content** — All generated content is grounded in the actual code diff, not hallucinated from the PR title alone.
-- **Idempotent Execution** — Safe to re-trigger; does not create duplicate entries or corrupt existing documentation.
-- **Visual Workflow Orchestration** — The entire pipeline is defined as an importable n8n workflow, making it transparent and modifiable.
+- **Event-Driven Automation** - Triggered automatically on PR merge via GitHub Webhooks. No polling, no cron jobs.
+- **Intelligent README Updates** - Appends well-structured documentation sections to the existing README without overwriting prior content.
+- **Technical Blog Generation** - Produces publication-ready blog posts that explain the what, why, and how of each merged feature.
+- **Tutorial Video Script Generation** - Creates timestamped, narration-ready scripts suitable for screen recording walkthroughs.
+- **Context-Aware Content** - All generated content is grounded in the actual code diff, not hallucinated from the PR title alone.
+- **Idempotent Execution** - Safe to re-trigger; does not create duplicate entries or corrupt existing documentation.
+- **Visual Workflow Orchestration** - The entire pipeline is defined as an importable n8n workflow, making it transparent and modifiable.
 
 ---
 
@@ -194,7 +194,7 @@ GitHub Repository
 
 ### Prerequisites
 
-- [n8n](https://n8n.io/) — installed locally or accessible via cloud instance.
+- [n8n](https://n8n.io/) - installed locally or accessible via cloud instance.
 - A GitHub account with a repository to monitor.
 - A [Groq API key](https://console.groq.com/keys) for LLM inference.
 - A GitHub Personal Access Token with the following permissions:
@@ -334,16 +334,16 @@ n8n was chosen as the orchestration engine for several reasons:
 - **Native HTTP and webhook support** eliminates the need for custom server code to receive GitHub events.
 - **Built-in credential management** provides secure storage for API keys and tokens.
 - **Self-hosted option** ensures that sensitive repository data and API keys never leave the local environment.
-- **Rapid prototyping** — the complete pipeline was built and tested without writing a custom backend.
+- **Rapid prototyping** - the complete pipeline was built and tested without writing a custom backend.
 
 ### Why Groq?
 
 Groq was selected as the LLM inference provider because:
 
-- **Low-latency inference** — Groq's hardware-accelerated inference delivers responses in under 2 seconds, which is critical for keeping the automation pipeline responsive.
-- **High-quality Markdown generation** — The LLaMA models available through Groq produce well-structured, coherent Markdown output suitable for documentation.
-- **Generous free tier** — Sufficient for development, testing, and demonstration without incurring costs.
-- **Simple REST API** — Clean integration with n8n's HTTP request nodes.
+- **Low-latency inference** - Groq's hardware-accelerated inference delivers responses in under 2 seconds, which is critical for keeping the automation pipeline responsive.
+- **High-quality Markdown generation** - The LLaMA models available through Groq produce well-structured, coherent Markdown output suitable for documentation.
+- **Generous free tier** - Sufficient for development, testing, and demonstration without incurring costs.
+- **Simple REST API** - Clean integration with n8n's HTTP request nodes.
 
 ### Why Webhooks over Polling?
 
@@ -363,11 +363,11 @@ Groq was selected as the LLM inference provider because:
 
 ### Future Improvements
 
-- **Automated video rendering** — Integrate with tools like FFmpeg and a TTS API (e.g., ElevenLabs) to render the generated script into an actual video with AI voiceover.
-- **Conflict resolution** — Add locking or queuing to handle concurrent PR merges gracefully.
-- **Multi-repository support** — Extend the webhook to monitor multiple repositories from a single workflow.
-- **Customizable templates** — Allow users to define their own prompt templates for different documentation styles.
-- **Slack/Discord notifications** — Send alerts when documentation is auto-updated.
+- **Automated video rendering** - Integrate with tools like FFmpeg and a TTS API (e.g., ElevenLabs) to render the generated script into an actual video with AI voiceover.
+- **Conflict resolution** - Add locking or queuing to handle concurrent PR merges gracefully.
+- **Multi-repository support** - Extend the webhook to monitor multiple repositories from a single workflow.
+- **Customizable templates** - Allow users to define their own prompt templates for different documentation styles.
+- **Slack/Discord notifications** - Send alerts when documentation is auto-updated.
 
 ---
 
