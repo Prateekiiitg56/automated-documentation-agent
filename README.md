@@ -1,6 +1,6 @@
 # Automated Documentation and Tutorial Agent
 
-An end-to-end automation pipeline that monitors a GitHub repository for pull request merges and automatically generates updated documentation, technical blog posts, and tutorial video scripts — eliminating the manual overhead of keeping project documentation in sync with code changes.
+An end-to-end automation pipeline that monitors a GitHub repository for pull request merges and automatically generates updated documentation, technical blog posts, and tutorial video scripts - eliminating the manual overhead of keeping project documentation in sync with code changes.
 
 ---
 
